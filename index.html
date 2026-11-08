@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Клиент - Приветствие (PHP)</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background-color: #0d0d12; /* Темный фон как в 1 задании */
+            color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .app-window {
+            background-color: #1a1a24;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(255, 123, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        h2 { text-align: center; margin-top: 0; color: #ff7b00; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; color: #a0a0b0; }
+        input {
+            width: 100%;
+            padding: 12px;
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus { border-color: #ff7b00; box-shadow: 0 0 10px rgba(255,123,0,0.2); }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff7b00, #ff4d00);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,123,0,0.4); }
+        #result {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            display: none;
+        }
+        .success { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+        .error { background-color: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+    </style>
+</head>
+<body>
+
+    <div class="app-window">
+        <h2>Форма приветствия</h2>
+        
+        <div class="form-group">
+            <label for="name">Ваше имя:</label>
+            <input type="text" id="name" placeholder="Например, Иван" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="age">Ваш возраст:</label>
+            <input type="number" id="age" placeholder="Например, 25" min="1" max="150" required>
+        </div>
+        
+        <button onclick="sendData()">Отправить на сервер</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function sendData() {
+            const name = document.getElementById('name').value;
+            const age = document.getElementById('age').value;
+            const resultDiv = document.getElementById('result');
+
+            // Сброс предыдущих стилей
+            resultDiv.style.display = 'none';
+            resultDiv.className = '';
+
+            // Базовая клиентская проверка
+            if (!name || !age) {
+                resultDiv.style.display = 'block';
+                resultDiv.classList.add('error');
+                resultDiv.innerText = 'Пожалуйста, заполните все поля!';
+                return;
+            }
+
+            try {
+                // Отправка POST-запроса на PHP сервер
+                const response = await fetch('server.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, age: age })
+                });
+
+                const data = await response.json();
+
+                resultDiv.style.display = 'block';
+
+                if (response.ok) {
+                    // Успех (HTTP 200)
+                    resultDiv.classList.add('success');
+                    resultDiv.innerText = data.message;
+                } else {
+                    // Ошибка валидации от сервера (HTTP 400)
+                    resultDiv.classList.add('error');
+                    resultDiv.innerText = data.error;
+                }
+
+            } catch (error) {
+                // Ошибка сети
+                resultDiv.style.display = 'block';
+                resultDiv.classList.add('error');
+                resultDiv.innerText = 'Ошибка соединения с сервером.';
+            }
+        }
+    </script>
+
+</body>
+</html>
